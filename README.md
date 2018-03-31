@@ -1,2 +1,6 @@
 # LinearEquationSystems
-implementation of Jackobi, Gauss Seidel, LU decomposition algorithms to solve linear equations
+## Maciej Borzyszkowski
+implementation of algorithms to solve linear equations:
+* Jackobi 
+* Gauss Seidel
+* LU decomposition
