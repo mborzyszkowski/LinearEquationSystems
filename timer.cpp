@@ -1,20 +1,18 @@
-#include <ctime>
 #include "timer.h"
 
 
 Timer::Timer(){
-	this->startTime = 0;
-	this->countedTime = 0;
+	this->startTime = std::chrono::high_resolution_clock::now();
 }
-
 
 Timer::~Timer(){
 }
 
 void Timer::startTimer() {
-	this->startTime = clock();
+	this->startTime = std::chrono::high_resolution_clock::now();
 }
 
-float Timer::getCountedTime() {
-	return clock() - this->startTime;
+std::chrono::duration<double> Timer::getCountedTime() {
+	return std::chrono::duration_cast<std::chrono::duration<double>>
+		(std::chrono::high_resolution_clock::now() - this->startTime);
 }

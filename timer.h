@@ -1,13 +1,12 @@
-#include <ctime>
+#include <chrono>
 
 class Timer{
 public:
 	Timer();
 	~Timer();
 	void startTimer();
-	float getCountedTime();
+	std::chrono::duration<double> getCountedTime();
 private:
-	float startTime;
-	float countedTime;
+	std::chrono::high_resolution_clock::time_point startTime;
 };
 
