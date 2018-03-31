@@ -7,7 +7,7 @@
 Matrix::Matrix(int n) {
 	this->sizeRows = n;
 	this->sizeCols = n;
-	for (int i = 0; i < this->sizeCols; i++) {
+	for (int i = 0; i < this->sizeRows; i++) {
 		std::vector<int> a;
 		this->matrixIndexes.push_back(a);
 	}
@@ -16,7 +16,7 @@ Matrix::Matrix(int n) {
 Matrix::Matrix(int m, int n) {
 	this->sizeRows = m;
 	this->sizeCols = n;
-	for (int i = 0; i < this->sizeCols; i++) {
+	for (int i = 0; i < this->sizeRows; i++) {
 		std::vector<int> a;
 		this->matrixIndexes.push_back(a);
 	}
@@ -25,16 +25,7 @@ Matrix::Matrix(int m, int n) {
 Matrix::~Matrix() {
 
 }
-/*
-bool Matrix::searchForIndex(int x, int y) {
-	int tmpSize = matrixIndexes[x].size();
-	for (int i = 0; i < tmpSize; i++) {
-		if (matrixIndexes[x][i] == y)
-			return true;
-	}
-	return false;
-}
-*/
+
 double Matrix::getElemXY(int x, int y) {
 	if (matrixValues.find(y * this->sizeCols + x) == matrixValues.end())
 		return 0;
@@ -42,42 +33,39 @@ double Matrix::getElemXY(int x, int y) {
 		return matrixValues[y * this->sizeCols + x];
 }
 
-double Matrix::getNoZeroElemXY(const int x,const int y) {
+double Matrix::getNoZeroElemXY(int x, int y) {
 	return matrixValues[y * this->sizeCols + x];
 }
 
 void Matrix::setElemXY(int x, int y, double elem) {
-	this->matrixIndexes[x].push_back(y);
+	this->matrixIndexes[y].push_back(x);
 	this->matrixValues.insert(std::pair<int, double>(y*this->sizeCols + x, elem));
 }
 
 void Matrix::matrixGeneratr(int a1, int a2, int a3) {
-	int pomSize = matrixIndexes.size();
-	for (int i = 0; i < pomSize; i++) {
+	for (int i = 0; i < sizeRows; i++) {
 		if (i >= 2)
 			setElemXY(i - 2, i, (double)a3);
 		if (i >= 1)
 			setElemXY(i - 1, i, (double)a2);
 		setElemXY(i, i, (double)a1);
-		if (i < pomSize - 1)
+		if (i < sizeRows - 1)
 			setElemXY(i + 1, i, (double)a2);
-		if (i < pomSize - 2)
+		if (i < sizeRows - 2)
 			setElemXY(i + 2, i, (double)a3);
 	}
 }
 
 void Matrix::vectorGenerator(int f) {
-	int pomSize = this->sizeRows;
-	for (int i = 0; i < pomSize; i++) {
+	for (int i = 0; i < this->sizeRows; i++) {
 		setElemXY(0, i, sin(i*(f + 1)));
 	}
 }
 
 void Matrix::printMatrix() {
-	int pomSize = matrixIndexes.size();
-	for (int i = 0; i < pomSize; i++) {
-		for (int j = 0; j < matrixIndexes[i].size(); j++) {
-			std::cout << "(" << i << "," << matrixIndexes[i][j] << ") -> " << matrixValues[matrixIndexes[i][j] * this->sizeCols + i] << std::endl;
+	for (int y = 0; y < sizeRows; y++) {
+		for (int x = 0; x < matrixIndexes[y].size(); x++) {
+			std::cout << "(" << y << "," << matrixIndexes[y][x] << ") -> " << matrixValues[y * this->sizeCols + matrixIndexes[y][x]] << std::endl;
 		}
 	}
 }
@@ -90,26 +78,26 @@ void Matrix::changeElemXY(int x, int y, double val) { // var zerowania
 			this->matrixValues[y*this->sizeCols + x] += val;
 		else {		//usuniecie indexu w tab poniewaz wartosc jest zero
 			this->matrixValues.erase(y*this->sizeCols + x);
-			this->matrixIndexes[x].erase(std::remove(matrixIndexes[x].begin(), matrixIndexes[x].end(), y));
+			this->matrixIndexes[y].erase(std::remove(matrixIndexes[y].begin(), matrixIndexes[y].end(), x));
 		}
 	}
 	else
 	{
-		this->matrixIndexes[x].push_back(y);
+		this->matrixIndexes[y].push_back(x);
 		this->matrixValues.insert(std::pair<int, double>(y*this->sizeCols + x, val));
 	}
 }
 
 Matrix operator+ (Matrix& left, Matrix& right) {
-	Matrix newMatrix = Matrix(left.sizeCols);
-	for (int x = 0; x < left.sizeCols; x++) {
-		for (int j = 0; j < left.matrixIndexes[x].size(); j++) {
-			newMatrix.setElemXY(x, left.matrixIndexes[x][j], left.getNoZeroElemXY(x, left.matrixIndexes[x][j]));
+	Matrix newMatrix = Matrix(left.sizeRows);
+	for (int y = 0; y < left.sizeRows; y++) {
+		for (int x = 0; x < left.matrixIndexes[y].size(); x++) {
+			newMatrix.setElemXY(left.matrixIndexes[y][x], y, left.getNoZeroElemXY(left.matrixIndexes[y][x], y));
 		}
 	}
-	for (int x = 0; x < right.sizeCols; x++) {
-		for (int j = 0; j < right.matrixIndexes[x].size(); j++) {
-			newMatrix.changeElemXY(x, right.matrixIndexes[x][j], left.getNoZeroElemXY(x, left.matrixIndexes[x][j]));
+	for (int y = 0; y < right.sizeRows; y++) {
+		for (int x = 0; x < right.matrixIndexes[y].size(); x++) {
+			newMatrix.changeElemXY(left.matrixIndexes[y][x], y, left.getNoZeroElemXY(left.matrixIndexes[y][x], y));
 		}
 	}
 	return newMatrix;
@@ -117,27 +105,28 @@ Matrix operator+ (Matrix& left, Matrix& right) {
 
 Matrix operator- (Matrix& left, Matrix& right) {
 	Matrix newMatrix = Matrix(left.sizeCols);
-	for (int x = 0; x < left.sizeCols; x++) {
-		for (int j = 0; j < left.matrixIndexes[x].size(); j++) {
-			newMatrix.setElemXY(x, left.matrixIndexes[x][j], left.getNoZeroElemXY(x, left.matrixIndexes[x][j]));
+	for (int y = 0; y < left.sizeRows; y++) {
+		for (int x = 0; x < left.matrixIndexes[y].size(); x++) {
+			newMatrix.setElemXY(left.matrixIndexes[y][x], y, left.getNoZeroElemXY(left.matrixIndexes[y][x], y));
 		}
 	}
-	for (int x = 0; x < right.sizeCols; x++) {
-		for (int j = 0; j < right.matrixIndexes[x].size(); j++) {
-			newMatrix.changeElemXY(x, right.matrixIndexes[x][j], -left.getNoZeroElemXY(x, left.matrixIndexes[x][j]));
+	for (int y = 0; y < right.sizeRows; y++) {
+		for (int x = 0; x < right.matrixIndexes[y].size(); x++) {
+			newMatrix.changeElemXY(left.matrixIndexes[y][x], y, -left.getNoZeroElemXY(left.matrixIndexes[y][x], y));
 		}
 	}
 	return newMatrix;
 }
 
-Matrix operator* (Matrix& left, Matrix& right) {
+Matrix operator* (Matrix& left, Matrix& right) {	// zmienic
 	Matrix newMatrix = Matrix(left.sizeRows, right.sizeCols);
 	for (int x = 0; x < newMatrix.sizeCols; x++) {
 		for (int y = 0; y < newMatrix.sizeRows; y++) {
 			double singleResult = 0;
-			for (int i = 0; i < newMatrix.sizeRows; i++) {
-				if(left.getElemXY(i, y) && right.getElemXY(x, i))
-					singleResult += left.getElemXY(i, y) * right.getElemXY(x, i);
+			for (int i = 0; i < left.matrixIndexes[y].size(); i++) {
+				int pomIndex = left.matrixIndexes[y][i];
+				//if(left.getElemXY(pomIndex, y) && right.getElemXY(x, pomIndex))
+				singleResult += left.getElemXY(pomIndex, y) * right.getElemXY(x, pomIndex);
 			}
 			newMatrix.setElemXY(x, y, singleResult);
 		}
@@ -146,29 +135,29 @@ Matrix operator* (Matrix& left, Matrix& right) {
 }
 
 Matrix Matrix::matrixD() {
-	Matrix newMatrix = Matrix(this->sizeCols);
-	for (int i = 0; i < this->sizeCols; i++) {
+	Matrix newMatrix = Matrix(this->sizeRows);
+	for (int i = 0; i < this->sizeRows; i++) {
 		newMatrix.setElemXY(i, i, this->getElemXY(i, i));
 	}
 	return newMatrix;
 }
 
 Matrix Matrix::matrixU() {
-	Matrix newMatrix = Matrix(this->sizeCols);
-	for (int i = 0; i < this->sizeCols; i++) {
-		for (int j = 0; j < this->matrixIndexes[i].size(); j++)
-			if (matrixIndexes[i][j] < i)
-				newMatrix.setElemXY(i, matrixIndexes[i][j], this->getElemXY(i, matrixIndexes[i][j]));
+	Matrix newMatrix = Matrix(this->sizeRows);
+	for (int y = 0; y < this->sizeRows; y++) {
+		for (int x = 0; x < this->matrixIndexes[y].size(); x++)
+			if (matrixIndexes[y][x] > y)
+				newMatrix.setElemXY(matrixIndexes[y][x], y, this->getElemXY(matrixIndexes[y][x], y));
 	}
 	return newMatrix;
 }
 
 Matrix Matrix::matrixL() {
-	Matrix newMatrix = Matrix(this->sizeCols);
-	for (int i = 0; i < this->sizeCols; i++) {
-		for (int j = 0; j < this->matrixIndexes[i].size(); j++)
-			if (matrixIndexes[i][j] < i)
-				newMatrix.setElemXY(i, matrixIndexes[i][j], this->getElemXY(i, matrixIndexes[i][j]));
+	Matrix newMatrix = Matrix(this->sizeRows);
+	for (int y = 0; y < this->sizeRows; y++) {
+		for (int x = 0; x < this->matrixIndexes[y].size(); x++)
+			if (matrixIndexes[y][x] < y)
+				newMatrix.setElemXY(matrixIndexes[y][x], y, this->getElemXY(matrixIndexes[y][x], y));
 	}
 	return newMatrix;
 }
