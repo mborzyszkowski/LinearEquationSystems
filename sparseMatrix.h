@@ -32,6 +32,7 @@ namespace sparse {
 		int sizeRows;
 		std::vector<std::vector<int>> matrixIndexes;
 		std::unordered_map<long long, double> matrixValues;
+		double getElemXYconst(int x, int y) const;
 		double getNoZeroElemXY(int x, int y) const;
 		bool getNoEmptyElemXY(int x, int y, double& val);
 		void setElemXY(int x, int y, double val);

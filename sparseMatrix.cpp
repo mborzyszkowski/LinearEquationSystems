@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <fstream>
 
 using namespace sparse;
 
@@ -52,6 +53,15 @@ double Matrix::getNoZeroElemXY(int x, int y) const {
 	return matrixValues.at(y * this->sizeCols + x);
 }
 
+double Matrix::getElemXYconst(int x, int y) const {
+
+	for (int i = 0; i < matrixIndexes[y].size(); i++) {
+		if (matrixIndexes[y][i] == x)
+			return matrixValues.at(y * this->sizeCols + x);
+	}
+	return 0;
+}
+
 void Matrix::setElemXY(int x, int y, double elem) {
 
 	this->matrixIndexes[y].push_back(x);
@@ -94,22 +104,25 @@ void Matrix::diagOnesGenerator() {
 }
 
 void Matrix::printMatrix() {
+	std::ofstream txt;
+	txt.open("vals.txt");
 
 	for (int y = 0; y < sizeRows; y++) {
 		for (int x = 0; x < (int)matrixIndexes[y].size(); x++) {
-			std::cout << "(" << y << "," << matrixIndexes[y][x] << ") -> " << matrixValues[y * this->sizeCols + matrixIndexes[y][x]] << std::endl;
+			txt << "(" << y << "," << matrixIndexes[y][x] << ") -> " << matrixValues[y * this->sizeCols + matrixIndexes[y][x]] << std::endl;
 		}
 	}
+	txt.close();
 }
 
-void Matrix::changeElemXY(int x, int y, double val) { // var zerowania
+void Matrix::changeElemXY(int x, int y, double val) {
 	double pom;
 
 	if (getNoEmptyElemXY(x, y, pom)) {
 		pom += val;
 		if (pom)
 			this->matrixValues[y*this->sizeCols + x] += val;
-		else {		//usuniecie indexu w tab poniewaz wartosc jest zero
+		else {
 			this->matrixValues.erase(y*this->sizeCols + x);
 			this->matrixIndexes[y].erase(std::remove(matrixIndexes[y].begin(), matrixIndexes[y].end(), x));
 		}
@@ -158,31 +171,29 @@ const Matrix sparse::operator* (const Matrix& left, const Matrix& right) {
 	double singleResult;
 	int pomIndex;
 
-	/*if (newMatrix.sizeCols == 1)
-	*/	for (int x = 0; x < newMatrix.sizeCols; x++) {
+	if (newMatrix.sizeCols == 1)
+		for (int x = 0; x < newMatrix.sizeCols; x++) {
 			for (int y = 0; y < newMatrix.sizeRows; y++) {
 				singleResult = 0;
 				for (int i = 0; i < (int)left.matrixIndexes[y].size(); i++) {
 					pomIndex = left.matrixIndexes[y][i];
-					//if(left.getElemXY(pomIndex, y) && right.getElemXY(x, pomIndex))
 					singleResult += left.getNoZeroElemXY(pomIndex, y) * right.getNoZeroElemXY(x, pomIndex);
 				}
 				newMatrix.setElemXY(x, y, singleResult);
 			}
 		}
-	//else {
-	//	for (int x = 0; x < newMatrix.sizeCols; x++) {
-	//		for (int y = 0; y < newMatrix.sizeRows; y++) {
-	//			double singleResult = 0;
-	//			for (int i = 0; i < (int)left.matrixIndexes[y].size(); i++) {
-	//				int pomIndex = left.matrixIndexes[y][i];
-	//				//if(left.getElemXY(pomIndex, y) && right.getElemXY(x, pomIndex))
-	//				singleResult += left.getNoZeroElemXY(pomIndex, y) * right.getElemXY(x, pomIndex);
-	//			}
-	//			newMatrix.setElemXY(x, y, singleResult);
-	//		}
-	//	}
-	//}
+	else {
+		for (int x = 0; x < newMatrix.sizeCols; x++) {
+			for (int y = 0; y < newMatrix.sizeRows; y++) {
+				double singleResult = 0;
+				for (int i = 0; i < (int)left.matrixIndexes[y].size(); i++) {
+					int pomIndex = left.matrixIndexes[y][i];
+					singleResult += left.getNoZeroElemXY(pomIndex, y) * right.getElemXYconst(x, pomIndex);
+				}
+				newMatrix.setElemXY(x, y, singleResult);
+			}
+		}
+	}
 
 
 	return newMatrix;
@@ -295,12 +306,14 @@ void Matrix::doolittle_fLU(Matrix& L, Matrix& U) {
 	for (int i = 0; i < this->sizeRows; i++) {
 		for (int j = i; j < this->sizeCols; j++) {
 			newElem = 0;
-			for (int k = 0; k < L.matrixIndexes[i].size(); k++) {	//elementy l na wierszu y nierowne zero
+			for (int k = 0; k < L.matrixIndexes[i].size(); k++) {
 				pomIndex = L.matrixIndexes[i][k];
-				if (pomIndex != i)		// nie jest to elem ktory wyliczamy
+				if (pomIndex != i)	
 					newElem += L.getNoZeroElemXY(pomIndex, i) * U.getElemXY(j, pomIndex);
 			}
-			U.setElemXY(j, i, this->getElemXY(j, i) - newElem);
+			newElem = this->getElemXY(j, i) - newElem;
+			if (newElem != 0)
+				U.setElemXY(j, i, newElem);
 		}
 		for (int j = i + 1; j < this->sizeCols; j++) {
 			newElem = 0;
@@ -308,7 +321,9 @@ void Matrix::doolittle_fLU(Matrix& L, Matrix& U) {
 				if (k != j)
 					newElem += L.getElemXY(k, j) * U.getElemXY(i, k);
 			}
-			L.setElemXY(i, j, (this->getElemXY(j, i) - newElem) / U.getElemXY(i, i));
+			newElem = (this->getElemXY(j, i) - newElem) / U.getElemXY(i, i);
+			if (newElem != 0)
+				L.setElemXY(i, j, newElem);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 #include "matrix.h"
 #include <cmath>
+#include <fstream>
 
 using namespace normal;
 
@@ -70,10 +71,25 @@ void Matrix::vectorXGenerator() {
 }
 
 void Matrix::diagOnesGenerator() {
+
 	for (int i = 0; i < this->sizeCols; i++) {
 		this->values[i][i] = 1.0;
 	}
 }
+
+void Matrix::printMatrix() {
+	std::ofstream txt;
+	txt.open("vals.txt");
+
+	for (int y = 0; y < this->sizeRows; y++) {
+		for (int x = 0; x < this->sizeCols; x++) {
+			txt << this->values[x][y] << " ";
+		}
+		txt << std::endl;
+	}
+	txt.close();
+}
+
 
 double Matrix::norm() {
 	double result = 0, pom;
@@ -144,9 +160,9 @@ void Matrix::doolittle_fLU(Matrix& L, Matrix& U) {
 	for (int i = 0; i < this->sizeRows; i++) {
 		for (int j = i; j < this->sizeCols; j++) {
 			newElem = 0;
-			for (int k = 0; k < i; k++) {//L.sizeCols
+			for (int k = 0; k < i; k++) {
 				if (j != k)	
-					newElem += L.values[k][j] * U.values[j][k];
+					newElem += L.values[k][i] * U.values[j][k];
 			}
 			U.values[j][i] = this->values[j][i] - newElem;
 		}
