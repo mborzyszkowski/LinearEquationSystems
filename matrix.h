@@ -13,7 +13,12 @@ namespace normal {
 		void vectorXGenerator();
 		void diagOnesGenerator();
 		void printMatrix();
+		double getElemXY(int x, int y);
 		double norm();
+		Matrix matrixD();
+		Matrix matrixU();
+		Matrix matrixL();
+		Matrix reverseD();
 		void doolittle_fLU(Matrix& L, Matrix& U);
 		Matrix forwardSubstitution(Matrix& eqations, Matrix& values);
 		Matrix backSubstitution(Matrix& eqations, Matrix& values);

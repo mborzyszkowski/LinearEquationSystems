@@ -90,6 +90,9 @@ void Matrix::printMatrix() {
 	txt.close();
 }
 
+double Matrix::getElemXY(int x, int y) {
+	return this->values[x][y];
+}
 
 double Matrix::norm() {
 	double result = 0, pom;
@@ -100,6 +103,50 @@ double Matrix::norm() {
 	}
 	return sqrt(result);
 
+}
+
+Matrix Matrix::matrixD() {
+	Matrix newMatrix = Matrix(this->sizeRows);
+
+	for (int i = 0; i < this->sizeRows; i++) {
+		newMatrix.values[i][i] = this->values[i][i];
+	}
+	return newMatrix;
+
+}
+
+Matrix Matrix::matrixU() {
+	Matrix newMatrix = Matrix(this->sizeRows);
+
+	for (int y = 0; y < this->sizeRows; y++) {
+		for (int x = 0; x < this->sizeCols; x++)
+			if (x > y)
+				newMatrix.values[x][y] = this->values[x][y];
+	}
+	return newMatrix;
+}
+
+Matrix Matrix::matrixL() {
+	Matrix newMatrix = Matrix(this->sizeRows);
+	
+	for (int y = 0; y < this->sizeRows; y++) {
+		for (int x = 0; x < this->sizeCols; x++)
+			if (x < y)
+				newMatrix.values[x][y] = this->values[x][y];
+	}
+	return newMatrix;
+}
+
+Matrix Matrix::reverseD() {
+	Matrix newMatrix = Matrix(this->sizeCols);
+	double pomElem;
+
+	for (int i = 0; i < this->sizeCols; i++) {
+		pomElem = this->getElemXY(i, i);
+		if (pomElem)
+			newMatrix.values[i][i] = 1.0 / pomElem;
+	}
+	return newMatrix;
 }
 
 const Matrix normal::operator+ (const Matrix& left, const Matrix& right) {
