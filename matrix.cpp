@@ -219,7 +219,7 @@ void Matrix::doolittle_fLU(Matrix& L, Matrix& U) {
 				if (k != j)
 					newElem += L.values[k][j] * U.values[i][k];
 			}
-			L.values[i][j] = (this->values[j][i] - newElem) / U.values[i][i];
+			L.values[i][j] = (this->values[i][j] - newElem) / U.values[i][i];
 		}
 	}
 }
