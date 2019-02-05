@@ -1,21 +1,16 @@
-#ifndef SPARSEMATRIX_H
-#define SPARSEMATRIX_H
+#ifndef NORMALMATRIX_H
+#define NORMALMATRIX_H
 
 #include "matrix.h"
-#include <unordered_map>
 
 
-class SparseMatrix : public Matrix {
-	std::vector<std::vector<int>> matrixIndexesRows;
-	std::vector<std::vector<int>> matrixIndexesCols;
-	std::unordered_map<long long, double> matrixValues;
+class NormalMatrix : public Matrix {
+	std::vector<std::vector<double>> values;
 	void init();
-	void setEmptyElementXY(int x, int y, double value);
-	void addToElementXY(int x, int y, double value);
 public:
-	SparseMatrix(int size, bool marked = true);
-	SparseMatrix(int rows, int cols, bool marked = true);
-	virtual ~SparseMatrix();
+	NormalMatrix(int size, bool marked = true);
+	NormalMatrix(int rows, int cols, bool marked = true);
+	virtual ~NormalMatrix();
 	virtual double getElementXY(int x, int y) const;
 	virtual void setElementXY(int x, int y, double value);
 	virtual void print() const;
@@ -24,9 +19,8 @@ public:
 	virtual Matrix* sub(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* mul(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* inversion(const Matrix& matrix) const;
-
 };
-//namespace sparse {
+//namespace normal {
 //	class Matrix {
 //	public:
 //		/*NxN*/
@@ -55,13 +49,7 @@ public:
 //	private:
 //		int sizeCols;
 //		int sizeRows;
-//		std::vector<std::vector<int>> matrixIndexes;
-//		std::unordered_map<long long, double> matrixValues;
-//		double getElemXYconst(int x, int y) const;
-//		double getNoZeroElemXY(int x, int y) const;
-//		bool getNoEmptyElemXY(int x, int y, double& val);
-//		void setElemXY(int x, int y, double val);
-//		void changeElemXY(int x, int y, double val);
+//		std::vector<std::vector<double>> values;
 //	};
 //}
-#endif // !SPARSEMATRIX_H
+#endif // !NORMALMATRIX_H
