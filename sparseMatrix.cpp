@@ -93,7 +93,7 @@ void SparseMatrix::print() const {
 }
 
 Matrix* SparseMatrix::matrixD() {
-	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
 
 	for (int i = 0; i < this->getSizeRows(); i++) {
 		newMatrix->setEmptyElementXY(i, i, this->getElementXY(i, i));
@@ -102,7 +102,7 @@ Matrix* SparseMatrix::matrixD() {
 }
 
 Matrix* SparseMatrix::matrixU() {
-	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
 
 	for (int y = 0; y < this->getSizeRows(); y++) {
 		for (size_t x = 0; x < this->matrixIndexesRows[y].size(); x++) {
@@ -115,7 +115,7 @@ Matrix* SparseMatrix::matrixU() {
 }
 
 Matrix* SparseMatrix::matrixL() {
-	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
 
 	for (int y = 0; y < this->getSizeRows(); y++) {
 		for (size_t x = 0; x < this->matrixIndexesRows[y].size(); x++) {
@@ -128,7 +128,7 @@ Matrix* SparseMatrix::matrixL() {
 }
 
 Matrix* SparseMatrix::reverseD() {
-	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
 	double pomValue;
 
 	for (int i = 0; i < this->getSizeRows(); i++) {

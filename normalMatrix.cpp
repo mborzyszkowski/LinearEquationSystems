@@ -48,7 +48,7 @@ void NormalMatrix::print() const {
 }
 
 Matrix* NormalMatrix::matrixD() {
-	Matrix* newMatrix = new NormalMatrix(this->getSizeRows(), false);
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
 
 	for (int i = 0; i < this->getSizeRows(); i++) {
 		newMatrix->setElementXY(i, i, this->getElementXY(i, i));
@@ -57,7 +57,7 @@ Matrix* NormalMatrix::matrixD() {
 }
 
 Matrix* NormalMatrix::matrixU() {
-	Matrix* newMatrix = new NormalMatrix(this->getSizeRows(), false);
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
 
 	for (int y = 0; y < this->getSizeRows(); y++) {
 		for (int x = 0; x < this->getSizeCols(); x++) {
@@ -69,7 +69,7 @@ Matrix* NormalMatrix::matrixU() {
 }
 
 Matrix* NormalMatrix::matrixL() {
-	Matrix* newMatrix = new NormalMatrix(this->getSizeRows(), false);
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
 
 	for (int y = 0; y < this->getSizeRows(); y++) {
 		for (int x = 0; x < this->getSizeCols(); x++) {
@@ -81,7 +81,7 @@ Matrix* NormalMatrix::matrixL() {
 }
 
 Matrix* NormalMatrix::reverseD() {
-	Matrix* newMatrix = new NormalMatrix(this->getSizeRows(), false);
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
 	double pomValue;
 
 	for (int i = 0; i < this->getSizeRows(); i++) {

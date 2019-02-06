@@ -51,25 +51,25 @@ double Matrix::normalize() {
 }
 
 Matrix* Matrix::matrixD() {
-	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols);
 
 	return newMatrix;
 }
 
 Matrix* Matrix::matrixU() {
-	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols);
 
 	return newMatrix;
 }
 
 Matrix* Matrix::matrixL() {
-	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols);
 
 	return newMatrix;
 }
 
 Matrix* Matrix::reverseD() {
-	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols);
 
 	return newMatrix;
 }
