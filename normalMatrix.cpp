@@ -92,10 +92,10 @@ Matrix* NormalMatrix::reverseD() {
 	return newMatrix;
 }
 
-void NormalMatrix::doolittle_fLU(Matrix* L, Matrix* U) {
+void NormalMatrix::doolittle_fLU(Matrix** L, Matrix** U) {
 	double newElement;
-	L = NormalMatrix::diagOnesGenerator(this->getSizeRows());
-	U = new NormalMatrix(this->getSizeRows());
+	*L = NormalMatrix::diagOnesGenerator(this->getSizeRows());
+	*U = new NormalMatrix(this->getSizeRows());
 
 	for (int i = 0; i < this->getSizeRows(); i++) {
 		for (int j = i; j < this->getSizeCols(); j++) {
@@ -103,18 +103,18 @@ void NormalMatrix::doolittle_fLU(Matrix* L, Matrix* U) {
 
 			for (int k = 0; k < i; k++) {
 				if (j != k)
-					newElement += L->getElementXY(k, i) * U->getElementXY(j, k);
+					newElement += (*L)->getElementXY(k, i) * (*U)->getElementXY(j, k);
 			}
-			U->setElementXY(j, i, this->getElementXY(j, i) - newElement);
+			(*U)->setElementXY(j, i, this->getElementXY(j, i) - newElement);
 		}
 		for (int j = i + 1; j < this->getSizeCols(); j++) {
 			newElement = 0;
 
 			for (int k = 0; k < i; k++) {
 				if (k != j)
-					newElement += L->getElementXY(k, j) * U->getElementXY(i, k);
+					newElement += (*L)->getElementXY(k, j) * (*U)->getElementXY(i, k);
 			}
-			L->setElementXY(i, j, (this->getElementXY(i, j) - newElement) / U->getElementXY(i, i));
+			(*L)->setElementXY(i, j, (this->getElementXY(i, j) - newElement) / (*U)->getElementXY(i, i));
 		}
 	}
 }

@@ -74,9 +74,9 @@ Matrix* Matrix::reverseD() {
 	return newMatrix;
 }
 
-void Matrix::doolittle_fLU(Matrix* L, Matrix* U) {
-	L = new Matrix(this->getSizeRows());
-	U = new Matrix(this->getSizeRows());
+void Matrix::doolittle_fLU(Matrix** L, Matrix** U) {
+	*L = new Matrix(this->getSizeRows());
+	*U = new Matrix(this->getSizeRows());
 }
 
 Matrix* Matrix::forwardSubstitution(Matrix* eqations, Matrix* values) {

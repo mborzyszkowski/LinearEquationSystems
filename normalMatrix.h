@@ -19,7 +19,7 @@ public:
 	virtual Matrix* matrixU();
 	virtual Matrix* matrixL();
 	virtual Matrix* reverseD();
-	virtual void doolittle_fLU(Matrix* L, Matrix* U);
+	virtual void doolittle_fLU(Matrix** L, Matrix** U);
 	virtual Matrix* forwardSubstitution(Matrix* eqations, Matrix* values);
 	virtual Matrix* backSubstitution(Matrix* eqations, Matrix* values);
 

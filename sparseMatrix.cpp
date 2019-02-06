@@ -139,13 +139,13 @@ Matrix* SparseMatrix::reverseD() {
 	return newMatrix;
 }
 
-void SparseMatrix::doolittle_fLU(Matrix* L, Matrix* U) {
+void SparseMatrix::doolittle_fLU(Matrix** L, Matrix** U) {
 	double newElement;
 	SparseMatrix* pomL,* pomU;
-	L = SparseMatrix::diagOnesGenerator(this->getSizeRows());
-	pomL = (SparseMatrix*)L;
-	U = new SparseMatrix(this->getSizeRows());
-	pomU = (SparseMatrix*)U;
+	*L = SparseMatrix::diagOnesGenerator(this->getSizeRows());
+	pomL = (SparseMatrix*)(*L);
+	*U = new SparseMatrix(this->getSizeRows());
+	pomU = (SparseMatrix*)(*U);
 
 	for (int i = 0; i < this->getSizeRows(); i++) {
 		for (int j = i; j < this->getSizeCols(); j++) {
