@@ -92,6 +92,62 @@ Matrix* NormalMatrix::reverseD() {
 	return newMatrix;
 }
 
+void NormalMatrix::doolittle_fLU(Matrix* L, Matrix* U) {
+	double newElement;
+	L = NormalMatrix::diagOnesGenerator(this->getSizeRows());
+	U = new NormalMatrix(this->getSizeRows());
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		for (int j = i; j < this->getSizeCols(); j++) {
+			newElement = 0;
+
+			for (int k = 0; k < i; k++) {
+				if (j != k)
+					newElement += L->getElementXY(k, i) * U->getElementXY(j, k);
+			}
+			U->setElementXY(j, i, this->getElementXY(j, i) - newElement);
+		}
+		for (int j = i + 1; j < this->getSizeCols(); j++) {
+			newElement = 0;
+
+			for (int k = 0; k < i; k++) {
+				if (k != j)
+					newElement += L->getElementXY(k, j) * U->getElementXY(i, k);
+			}
+			L->setElementXY(i, j, (this->getElementXY(i, j) - newElement) / U->getElementXY(i, i));
+		}
+	}
+}
+
+Matrix* NormalMatrix::forwardSubstitution(Matrix* eqations, Matrix* values) {
+	NormalMatrix* newMatrix = new NormalMatrix(values->getSizeRows(), 1);
+	double pomResult;
+
+	for (int y = 0; y < newMatrix->getSizeRows(); y++) {
+		pomResult = 0;
+
+		for (int x = 0; x < y; x++) {
+			pomResult += eqations->getElementXY(x, y) * newMatrix->getElementXY(0, x);
+		}
+		newMatrix->setElementXY(0, y, (values->getElementXY(0, y) - pomResult) / eqations->getElementXY(y, y));
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::backSubstitution(Matrix* eqations, Matrix* values) {
+	NormalMatrix* newMatrix = new NormalMatrix(values->getSizeRows(), 1);
+	double pomResult;
+
+	for (int y = newMatrix->getSizeRows() - 1; y >= 0; y--) {
+		pomResult = 0;
+		for (int x = newMatrix->getSizeRows() - 1; x > y; x--) {
+			pomResult += eqations->getElementXY(x, y) * newMatrix->getElementXY(0, x);
+		}
+		newMatrix->setElementXY(0, y, (values->getElementXY(0, y) - pomResult) / eqations->getElementXY(y, y));
+	}	
+	return newMatrix;
+}
+
 Matrix* NormalMatrix::matrixGenerator(int size, int a1, int a2, int a3) {
 	NormalMatrix* newMatrix = new NormalMatrix(size);
 

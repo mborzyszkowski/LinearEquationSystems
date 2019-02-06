@@ -24,9 +24,9 @@ public:
 	virtual Matrix* matrixU();
 	virtual Matrix* matrixL();
 	virtual Matrix* reverseD();
-//	virtual void doolittle_fLU(Matrix& L, Matrix& U);
-//	virtual Matrix forwardSubstitution(Matrix& eqations, Matrix& values);
-//	virtual Matrix backSubstitution(Matrix& eqations, Matrix& values);
+	virtual void doolittle_fLU(Matrix* L, Matrix* U);
+	virtual Matrix* forwardSubstitution(Matrix* eqations, Matrix* values);
+	virtual Matrix* backSubstitution(Matrix* eqations, Matrix* values);
 
 	friend Matrix& operator+(const Matrix& left, const Matrix& right);
 	friend Matrix& operator-(const Matrix& left, const Matrix& right);
