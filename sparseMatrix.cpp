@@ -86,16 +86,108 @@ void SparseMatrix::print() const {
 
 	for (int y = 0; y < this->getSizeRows(); y++) {
 		for (int x = 0; x < (int)matrixIndexesRows[y].size(); x++) {
-			std::cout << "(" << matrixIndexesRows[y][x] << "," << y << ") -> " << matrixValues.at(y * this->getSizeCols() + matrixIndexesRows[y][x]) << std::endl;
+			std::cout << "(" << matrixIndexesRows[y][x] << "," << y << ") -> " 
+				<< matrixValues.at(y * this->getSizeCols() + matrixIndexesRows[y][x]) << std::endl;
 		}
 	}
+}
+
+Matrix* SparseMatrix::matrixD() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		newMatrix->setEmptyElementXY(i, i, this->getElementXY(i, i));
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::matrixU() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+
+	for (int y = 0; y < this->getSizeRows(); y++) {
+		for (size_t x = 0; x < this->matrixIndexesRows[y].size(); x++) {
+			if (this->matrixIndexesRows[y][x] > y)
+				newMatrix->setEmptyElementXY(this->matrixIndexesRows[y][x], y,
+					this->matrixValues[y * this->getSizeCols() + matrixIndexesRows[y][x]]);
+		}
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::matrixL() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+
+	for (int y = 0; y < this->getSizeRows(); y++) {
+		for (size_t x = 0; x < this->matrixIndexesRows[y].size(); x++) {
+			if (this->matrixIndexesRows[y][x] < y)
+				newMatrix->setEmptyElementXY(this->matrixIndexesRows[y][x], y,
+					this->matrixValues[y * this->getSizeCols() + matrixIndexesRows[y][x]]);
+		}
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::reverseD() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols(), false);
+	double pomValue;
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		pomValue = this->getElementXY(i, i);
+		if (pomValue)
+			newMatrix->setEmptyElementXY(i, i, 1.0 / pomValue);
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::matrixGenerator(int size, int a1, int a2, int a3) {
+	SparseMatrix* newMatrix = new SparseMatrix(size);
+
+	for (int i = 0; i < size; i++) {
+		if (i >= 2)
+			newMatrix->setEmptyElementXY(i - 2, i, (double)a3);
+		if (i >= 1)
+			newMatrix->setEmptyElementXY(i - 1, i, (double)a2);
+		newMatrix->setEmptyElementXY(i, i, (double)a1);
+		if (i < size - 1)
+			newMatrix->setEmptyElementXY(i + 1, i, (double)a2);
+		if (i < size - 2)
+			newMatrix->setEmptyElementXY(i + 2, i, (double)a3);
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::vectorBGenerator(int size, int f) {
+	SparseMatrix* newMatrix = new SparseMatrix(size, 1);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setEmptyElementXY(0, i, sin((i + 1)*(f + 1)));
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::vectorXGenerator(int size) {
+	SparseMatrix* newMatrix = new SparseMatrix(size, 1);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setEmptyElementXY(0, i, 1.0 / size);
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::diagOnesGenerator(int size) {
+	SparseMatrix* newMatrix = new SparseMatrix(size);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setEmptyElementXY(i, i, 1.0);
+	}
+	return newMatrix;
 }
 
 Matrix* SparseMatrix::add(const Matrix& left, const Matrix& right) const {
 	Matrix* newMatrix = NULL;
 
 	if (typeid(left) != typeid(right)) {
-		newMatrix = right.add(left, right); //static virtual add as normalMatrix?? rzutowanie na normal??
+		newMatrix = right.add(left, right); //static virtual add as normalMatrix??
 	}
 	else {
 		SparseMatrix* newMatrixS = new SparseMatrix(left.getSizeRows(), left.getSizeCols(), false);
@@ -170,7 +262,7 @@ Matrix* SparseMatrix::mul(const Matrix& left, const Matrix& right) const {
 				while (rowsIdx < maxRows && colsIdx < maxCols) {
 					pomRows = leftP->matrixIndexesRows[rows][rowsIdx], pomCols = rightP->matrixIndexesCols[cols][colsIdx];
 
-					if (pomRows == pomCols) { //zlozenie rows ->y, pomRows->x * cols->x, pomCols->y (y * this->getSizeCols() + x)
+					if (pomRows == pomCols) {
 						cellResult += 
 							leftP->matrixValues[rows * leftP->getSizeCols() + pomRows] 
 							* rightP->matrixValues[pomCols * rightP->getSizeCols() + cols];

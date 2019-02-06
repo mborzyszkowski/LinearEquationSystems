@@ -40,6 +40,40 @@ void Matrix::print() const {
 	}
 }
 
+double Matrix::normalize() {
+	double result = 0, pom;
+
+	for (int i = 0; i < this->sizeRows; i++) {
+		pom = this->getElementXY(0, i);
+		result += pom * pom;
+	}
+	return sqrt(result);
+}
+
+Matrix* Matrix::matrixD() {
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+
+	return newMatrix;
+}
+
+Matrix* Matrix::matrixU() {
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+
+	return newMatrix;
+}
+
+Matrix* Matrix::matrixL() {
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+
+	return newMatrix;
+}
+
+Matrix* Matrix::reverseD() {
+	Matrix* newMatrix = new Matrix(this->sizeRows, this->sizeCols, false);
+
+	return newMatrix;
+}
+
 Matrix& operator+(const Matrix& left, const Matrix& right) {
 	Matrix* result = left.add(left, right);
 	return *result;

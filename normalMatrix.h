@@ -15,6 +15,16 @@ public:
 	virtual void setElementXY(int x, int y, double value);
 	virtual void print() const;
 
+	virtual Matrix* matrixD();
+	virtual Matrix* matrixU();
+	virtual Matrix* matrixL();
+	virtual Matrix* reverseD();
+
+	static Matrix* matrixGenerator(int size, int a1, int a2, int a3);
+	static Matrix* vectorBGenerator(int size, int f);
+	static Matrix* vectorXGenerator(int size);
+	static Matrix* diagOnesGenerator(int size);
+
 	virtual Matrix* add(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* sub(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* mul(const Matrix& left, const Matrix& right) const;
