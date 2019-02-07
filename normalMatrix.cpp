@@ -1,5 +1,7 @@
 #include "normalMatrix.h"
 #include <iostream>
+#include <cmath>
+
 
 NormalMatrix::NormalMatrix(int size, bool marked) : Matrix(size, marked) {
 	init();
@@ -43,6 +45,151 @@ void NormalMatrix::print() const {
 		}
 		std::cout << std::endl;
 	}
+}
+
+Matrix* NormalMatrix::matrixD() {
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		newMatrix->setElementXY(i, i, this->getElementXY(i, i));
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::matrixU() {
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
+
+	for (int y = 0; y < this->getSizeRows(); y++) {
+		for (int x = 0; x < this->getSizeCols(); x++) {
+			if (x > y)
+				newMatrix->setElementXY(x, y, this->getElementXY(x, y));
+		}
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::matrixL() {
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
+
+	for (int y = 0; y < this->getSizeRows(); y++) {
+		for (int x = 0; x < this->getSizeCols(); x++) {
+			if (x < y)
+				newMatrix->setElementXY(x, y, this->getElementXY(x, y));
+		}
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::reverseD() {
+	Matrix* newMatrix = new NormalMatrix(this->getSizeRows());
+	double pomValue;
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		pomValue = this->getElementXY(i, i);
+		if (pomValue)
+			newMatrix->setElementXY(i, i, 1.0 / pomValue);
+	}
+	return newMatrix;
+}
+
+void NormalMatrix::doolittle_fLU(Matrix** L, Matrix** U) {
+	double newElement;
+	*L = NormalMatrix::diagOnesGenerator(this->getSizeRows());
+	*U = new NormalMatrix(this->getSizeRows());
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		for (int j = i; j < this->getSizeCols(); j++) {
+			newElement = 0;
+
+			for (int k = 0; k < i; k++) {
+				if (j != k)
+					newElement += (*L)->getElementXY(k, i) * (*U)->getElementXY(j, k);
+			}
+			(*U)->setElementXY(j, i, this->getElementXY(j, i) - newElement);
+		}
+		for (int j = i + 1; j < this->getSizeCols(); j++) {
+			newElement = 0;
+
+			for (int k = 0; k < i; k++) {
+				if (k != j)
+					newElement += (*L)->getElementXY(k, j) * (*U)->getElementXY(i, k);
+			}
+			(*L)->setElementXY(i, j, (this->getElementXY(i, j) - newElement) / (*U)->getElementXY(i, i));
+		}
+	}
+}
+
+Matrix* NormalMatrix::forwardSubstitution(Matrix* eqations, Matrix* values) {
+	NormalMatrix* newMatrix = new NormalMatrix(values->getSizeRows(), 1);
+	double pomResult;
+
+	for (int y = 0; y < newMatrix->getSizeRows(); y++) {
+		pomResult = 0;
+
+		for (int x = 0; x < y; x++) {
+			pomResult += eqations->getElementXY(x, y) * newMatrix->getElementXY(0, x);
+		}
+		newMatrix->setElementXY(0, y, (values->getElementXY(0, y) - pomResult) / eqations->getElementXY(y, y));
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::backSubstitution(Matrix* eqations, Matrix* values) {
+	NormalMatrix* newMatrix = new NormalMatrix(values->getSizeRows(), 1);
+	double pomResult;
+
+	for (int y = newMatrix->getSizeRows() - 1; y >= 0; y--) {
+		pomResult = 0;
+		for (int x = newMatrix->getSizeRows() - 1; x > y; x--) {
+			pomResult += eqations->getElementXY(x, y) * newMatrix->getElementXY(0, x);
+		}
+		newMatrix->setElementXY(0, y, (values->getElementXY(0, y) - pomResult) / eqations->getElementXY(y, y));
+	}	
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::matrixGenerator(int size, int a1, int a2, int a3) {
+	NormalMatrix* newMatrix = new NormalMatrix(size);
+
+	for (int i = 0; i < size; i++) {
+		if (i >= 2)
+			newMatrix->setElementXY(i - 2, i, (double)a3);
+		if (i >= 1)
+			newMatrix->setElementXY(i - 1, i, (double)a2);
+		newMatrix->setElementXY(i, i, (double)a1);
+		if (i < size - 1)
+			newMatrix->setElementXY(i + 1, i, (double)a2);
+		if (i < size - 2)
+			newMatrix->setElementXY(i + 2, i, (double)a3);
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::vectorBGenerator(int size, int f) {
+	NormalMatrix* newMatrix = new NormalMatrix(size, 1);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setElementXY(0, i, sin((i + 1)*(f + 1)));
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::vectorXGenerator(int size) {
+	NormalMatrix* newMatrix = new NormalMatrix(size, 1);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setElementXY(0, i, 1.0 / size);
+	}
+	return newMatrix;
+}
+
+Matrix* NormalMatrix::diagOnesGenerator(int size) {
+	NormalMatrix* newMatrix = new NormalMatrix(size);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setElementXY(i, i, 1.0);
+	}
+	return newMatrix;
 }
 
 Matrix* NormalMatrix::add(const Matrix& left, const Matrix& right) const {

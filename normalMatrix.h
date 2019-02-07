@@ -15,41 +15,23 @@ public:
 	virtual void setElementXY(int x, int y, double value);
 	virtual void print() const;
 
+	virtual Matrix* matrixD();
+	virtual Matrix* matrixU();
+	virtual Matrix* matrixL();
+	virtual Matrix* reverseD();
+	virtual void doolittle_fLU(Matrix** L, Matrix** U);
+	virtual Matrix* forwardSubstitution(Matrix* eqations, Matrix* values);
+	virtual Matrix* backSubstitution(Matrix* eqations, Matrix* values);
+
+	static Matrix* matrixGenerator(int size, int a1, int a2, int a3);
+	static Matrix* vectorBGenerator(int size, int f);
+	static Matrix* vectorXGenerator(int size);
+	static Matrix* diagOnesGenerator(int size);
+
 	virtual Matrix* add(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* sub(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* mul(const Matrix& left, const Matrix& right) const;
 	virtual Matrix* inversion(const Matrix& matrix) const;
 };
-//namespace normal {
-//	class Matrix {
-//	public:
-//		/*NxN*/
-//		Matrix(int n);
-//		/*MxN*/
-//		Matrix(int m, int n);
-//		~Matrix();
-//		void matrixGenerator(int a1, int a2, int a3);
-//		void vectorBGenerator(int f);
-//		void vectorXGenerator();
-//		void diagOnesGenerator();
-//		void printMatrix();
-//		double getElemXY(int x, int y);
-//		double norm();
-//		Matrix matrixD();
-//		Matrix matrixU();
-//		Matrix matrixL();
-//		Matrix reverseD();
-//		void doolittle_fLU(Matrix& L, Matrix& U);
-//		Matrix forwardSubstitution(Matrix& eqations, Matrix& values);
-//		Matrix backSubstitution(Matrix& eqations, Matrix& values);
-//		friend const Matrix operator+ (const Matrix& left, const Matrix& right);
-//		friend const Matrix operator- (const Matrix& left, const Matrix& right);
-//		friend const Matrix operator* (const Matrix& left, const Matrix& right);
-//		friend const Matrix operator- (const Matrix& matrix);
-//	private:
-//		int sizeCols;
-//		int sizeRows;
-//		std::vector<std::vector<double>> values;
-//	};
-//}
+
 #endif // !NORMALMATRIX_H

@@ -18,4 +18,3 @@ public:
 };
 
 #endif // !OBJECTMANAGER_H
-

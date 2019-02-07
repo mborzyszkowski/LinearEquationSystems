@@ -86,16 +86,168 @@ void SparseMatrix::print() const {
 
 	for (int y = 0; y < this->getSizeRows(); y++) {
 		for (int x = 0; x < (int)matrixIndexesRows[y].size(); x++) {
-			std::cout << "(" << matrixIndexesRows[y][x] << "," << y << ") -> " << matrixValues.at(y * this->getSizeCols() + matrixIndexesRows[y][x]) << std::endl;
+			std::cout << "(" << matrixIndexesRows[y][x] << "," << y << ") -> " 
+				<< matrixValues.at(y * this->getSizeCols() + matrixIndexesRows[y][x]) << std::endl;
 		}
 	}
+}
+
+Matrix* SparseMatrix::matrixD() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		newMatrix->setEmptyElementXY(i, i, this->getElementXY(i, i));
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::matrixU() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
+
+	for (int y = 0; y < this->getSizeRows(); y++) {
+		for (size_t x = 0; x < this->matrixIndexesRows[y].size(); x++) {
+			if (this->matrixIndexesRows[y][x] > y)
+				newMatrix->setEmptyElementXY(this->matrixIndexesRows[y][x], y,
+					this->matrixValues[y * this->getSizeCols() + matrixIndexesRows[y][x]]);
+		}
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::matrixL() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
+
+	for (int y = 0; y < this->getSizeRows(); y++) {
+		for (size_t x = 0; x < this->matrixIndexesRows[y].size(); x++) {
+			if (this->matrixIndexesRows[y][x] < y)
+				newMatrix->setEmptyElementXY(this->matrixIndexesRows[y][x], y,
+					this->matrixValues[y * this->getSizeCols() + matrixIndexesRows[y][x]]);
+		}
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::reverseD() {
+	SparseMatrix* newMatrix = new SparseMatrix(this->getSizeRows(), this->getSizeCols());
+	double pomValue;
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		pomValue = this->getElementXY(i, i);
+		if (pomValue)
+			newMatrix->setEmptyElementXY(i, i, 1.0 / pomValue);
+	}
+	return newMatrix;
+}
+
+void SparseMatrix::doolittle_fLU(Matrix** L, Matrix** U) {
+	double newElement;
+	SparseMatrix* pomL,* pomU;
+	*L = SparseMatrix::diagOnesGenerator(this->getSizeRows());
+	pomL = (SparseMatrix*)(*L);
+	*U = new SparseMatrix(this->getSizeRows());
+	pomU = (SparseMatrix*)(*U);
+
+	for (int i = 0; i < this->getSizeRows(); i++) {
+		for (int j = i; j < this->getSizeCols(); j++) {
+			newElement = 0;
+
+			for (int k = 0; k < i; k++) {
+				if (j != k)
+					newElement += pomL->getElementXY(k, i) * pomU->getElementXY(j, k);
+			}
+			pomU->setEmptyElementXY(j, i, this->getElementXY(j, i) - newElement);
+		}
+		for (int j = i + 1; j < this->getSizeCols(); j++) {
+			newElement = 0;
+
+			for (int k = 0; k < i; k++) {
+				if (k != j)
+					newElement += pomL->getElementXY(k, j) * pomU->getElementXY(i, k);
+			}
+			pomL->setEmptyElementXY(i, j, (this->getElementXY(i, j) - newElement) / pomU->getElementXY(i, i));
+		}
+	}
+}
+
+Matrix* SparseMatrix::forwardSubstitution(Matrix* eqations, Matrix* values) {
+	SparseMatrix* newMatrix = new SparseMatrix(values->getSizeRows(), 1);
+	double pomResult;
+
+	for (int y = 0; y < newMatrix->getSizeRows(); y++) {
+		pomResult = 0;
+
+		for (int x = 0; x < y; x++) {
+			pomResult += eqations->getElementXY(x, y) * newMatrix->getElementXY(0, x);
+		}
+		newMatrix->setEmptyElementXY(0, y, (values->getElementXY(0, y) - pomResult) / eqations->getElementXY(y, y));
+	}
+
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::backSubstitution(Matrix* eqations, Matrix* values) {
+	SparseMatrix* newMatrix = new SparseMatrix(values->getSizeRows(), 1);
+	double pomResult;
+	
+	for (int y = newMatrix->getSizeRows() - 1; y >= 0; y--) {
+		pomResult = 0;
+		for (int x = newMatrix->getSizeRows() - 1; x > y; x--) {
+			pomResult += eqations->getElementXY(x, y) * newMatrix->getElementXY(0, x);
+		}
+		newMatrix->setEmptyElementXY(0, y, (values->getElementXY(0, y) - pomResult) / eqations->getElementXY(y, y));
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::matrixGenerator(int size, int a1, int a2, int a3) {
+	SparseMatrix* newMatrix = new SparseMatrix(size);
+
+	for (int i = 0; i < size; i++) {
+		if (i >= 2)
+			newMatrix->setEmptyElementXY(i - 2, i, (double)a3);
+		if (i >= 1)
+			newMatrix->setEmptyElementXY(i - 1, i, (double)a2);
+		newMatrix->setEmptyElementXY(i, i, (double)a1);
+		if (i < size - 1)
+			newMatrix->setEmptyElementXY(i + 1, i, (double)a2);
+		if (i < size - 2)
+			newMatrix->setEmptyElementXY(i + 2, i, (double)a3);
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::vectorBGenerator(int size, int f) {
+	SparseMatrix* newMatrix = new SparseMatrix(size, 1);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setEmptyElementXY(0, i, sin((i + 1)*(f + 1)));
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::vectorXGenerator(int size) {
+	SparseMatrix* newMatrix = new SparseMatrix(size, 1);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setEmptyElementXY(0, i, 1.0 / size);
+	}
+	return newMatrix;
+}
+
+Matrix* SparseMatrix::diagOnesGenerator(int size) {
+	SparseMatrix* newMatrix = new SparseMatrix(size);
+
+	for (int i = 0; i < size; i++) {
+		newMatrix->setEmptyElementXY(i, i, 1.0);
+	}
+	return newMatrix;
 }
 
 Matrix* SparseMatrix::add(const Matrix& left, const Matrix& right) const {
 	Matrix* newMatrix = NULL;
 
 	if (typeid(left) != typeid(right)) {
-		newMatrix = right.add(left, right); //static virtual add as normalMatrix?? rzutowanie na normal??
+		newMatrix = right.add(left, right); //static virtual add as normalMatrix??
 	}
 	else {
 		SparseMatrix* newMatrixS = new SparseMatrix(left.getSizeRows(), left.getSizeCols(), false);
@@ -170,7 +322,7 @@ Matrix* SparseMatrix::mul(const Matrix& left, const Matrix& right) const {
 				while (rowsIdx < maxRows && colsIdx < maxCols) {
 					pomRows = leftP->matrixIndexesRows[rows][rowsIdx], pomCols = rightP->matrixIndexesCols[cols][colsIdx];
 
-					if (pomRows == pomCols) { //zlozenie rows ->y, pomRows->x * cols->x, pomCols->y (y * this->getSizeCols() + x)
+					if (pomRows == pomCols) {
 						cellResult += 
 							leftP->matrixValues[rows * leftP->getSizeCols() + pomRows] 
 							* rightP->matrixValues[pomCols * rightP->getSizeCols() + cols];
@@ -205,333 +357,3 @@ Matrix* SparseMatrix::inversion(const Matrix& matrix) const {
 	}
 	return newMatrix;
 }
-
-//#include "sparseMatrix.h"
-//#include <iostream>
-//#include <cmath>
-//#include <algorithm>
-//#include <fstream>
-//
-//using namespace sparse;
-//
-//Matrix::Matrix(int n) {
-//	this->sizeRows = n;
-//	this->sizeCols = n;
-//
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		std::vector<int> a;
-//		this->matrixIndexes.push_back(a);
-//	}
-//}
-//
-//Matrix::Matrix(int m, int n) {
-//	this->sizeRows = m;
-//	this->sizeCols = n;
-//
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		std::vector<int> a;
-//		this->matrixIndexes.push_back(a);
-//	}
-//}
-//
-//Matrix::~Matrix() {
-//
-//}
-//
-//bool Matrix::getNoEmptyElemXY(int x, int y, double& val) {
-//	if (matrixValues.find(y * this->sizeCols + x) == matrixValues.end()) {
-//		val = 0;
-//		return 0;
-//	}
-//	else {
-//		val = matrixValues[y * this->sizeCols + x];
-//		return 1;
-//	}
-//}
-//
-//double Matrix::getElemXY(int x, int y) {
-//
-//	if (matrixValues.find(y * this->sizeCols + x) == matrixValues.end())
-//		return 0;
-//	else
-//		return matrixValues[y * this->sizeCols + x];
-//}
-//
-//double Matrix::getNoZeroElemXY(int x, int y) const {
-//	return matrixValues.at(y * this->sizeCols + x);
-//}
-//
-//double Matrix::getElemXYconst(int x, int y) const {
-//
-//	for (int i = 0; i < matrixIndexes[y].size(); i++) {
-//		if (matrixIndexes[y][i] == x)
-//			return matrixValues.at(y * this->sizeCols + x);
-//	}
-//	return 0;
-//}
-//
-//void Matrix::setElemXY(int x, int y, double elem) {
-//
-//	this->matrixIndexes[y].push_back(x);
-//	this->matrixValues.insert(std::pair<int, double>(y*this->sizeCols + x, elem));
-//}
-//
-//void Matrix::matrixGenerator(int a1, int a2, int a3) {
-//
-//	for (int i = 0; i < sizeRows; i++) {
-//		if (i >= 2)
-//			setElemXY(i - 2, i, (double)a3);
-//		if (i >= 1)
-//			setElemXY(i - 1, i, (double)a2);
-//		setElemXY(i, i, (double)a1);
-//		if (i < sizeRows - 1)
-//			setElemXY(i + 1, i, (double)a2);
-//		if (i < sizeRows - 2)
-//			setElemXY(i + 2, i, (double)a3);
-//	}
-//}
-//
-//void Matrix::vectorBGenerator(int f) {
-//
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		setElemXY(0, i, sin((i + 1)*(f + 1)));
-//	}
-//}
-//
-//void Matrix::vectorXGenerator() {
-//
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		setElemXY(0, i, 1.0 / this->sizeRows);
-//	}
-//}
-//
-//void Matrix::diagOnesGenerator() {
-//	for (int i = 0; i < this->sizeCols; i++) {
-//		this->setElemXY(i, i, 1);
-//	}
-//}
-//
-//void Matrix::printMatrix() {
-//	std::ofstream txt;
-//	txt.open("vals.txt");
-//
-//	for (int y = 0; y < sizeRows; y++) {
-//		for (int x = 0; x < (int)matrixIndexes[y].size(); x++) {
-//			txt << "(" << y << "," << matrixIndexes[y][x] << ") -> " << matrixValues[y * this->sizeCols + matrixIndexes[y][x]] << std::endl;
-//		}
-//	}
-//	txt.close();
-//}
-//
-//void Matrix::changeElemXY(int x, int y, double val) {
-//	double pom;
-//
-//	if (getNoEmptyElemXY(x, y, pom)) {
-//		pom += val;
-//		if (pom)
-//			this->matrixValues[y*this->sizeCols + x] += val;
-//		else {
-//			this->matrixValues.erase(y*this->sizeCols + x);
-//			this->matrixIndexes[y].erase(std::remove(matrixIndexes[y].begin(), matrixIndexes[y].end(), x));
-//		}
-//	}
-//	else
-//	{
-//		this->matrixIndexes[y].push_back(x);
-//		this->matrixValues.insert(std::pair<int, double>(y*this->sizeCols + x, val));
-//	}
-//}
-//
-//const Matrix sparse::operator+ (const Matrix& left, const Matrix& right) {
-//	Matrix newMatrix = Matrix(left.sizeRows, left.sizeCols);
-//
-//	for (int y = 0; y < left.sizeRows; y++) {
-//		for (int x = 0; x < (int)left.matrixIndexes[y].size(); x++) {
-//			newMatrix.setElemXY(left.matrixIndexes[y][x], y, left.getNoZeroElemXY(left.matrixIndexes[y][x], y));
-//		}
-//	}
-//	for (int y = 0; y < right.sizeRows; y++) {
-//		for (int x = 0; x < (int)right.matrixIndexes[y].size(); x++) {
-//			newMatrix.changeElemXY(right.matrixIndexes[y][x], y, right.getNoZeroElemXY(right.matrixIndexes[y][x], y));
-//		}
-//	}
-//	return newMatrix;
-//}
-//
-//const Matrix sparse::operator- (const Matrix& left, const Matrix& right) {
-//	Matrix newMatrix = Matrix(left.sizeRows, left.sizeCols);
-//
-//	for (int y = 0; y < left.sizeRows; y++) {
-//		for (int x = 0; x < (int)left.matrixIndexes[y].size(); x++) {
-//			newMatrix.setElemXY(left.matrixIndexes[y][x], y, left.getNoZeroElemXY(left.matrixIndexes[y][x], y));
-//		}
-//	}
-//	for (int y = 0; y < right.sizeRows; y++) {
-//		for (int x = 0; x < (int)right.matrixIndexes[y].size(); x++) {
-//			newMatrix.changeElemXY(right.matrixIndexes[y][x], y, -right.getNoZeroElemXY(right.matrixIndexes[y][x], y));
-//		}
-//	}
-//	return newMatrix;
-//}
-//
-//const Matrix sparse::operator* (const Matrix& left, const Matrix& right) {
-//	Matrix newMatrix = Matrix(left.sizeRows, right.sizeCols);
-//	double singleResult;
-//	int pomIndex;
-//
-//	if (newMatrix.sizeCols == 1)
-//		for (int x = 0; x < newMatrix.sizeCols; x++) {
-//			for (int y = 0; y < newMatrix.sizeRows; y++) {
-//				singleResult = 0;
-//				for (int i = 0; i < (int)left.matrixIndexes[y].size(); i++) {
-//					pomIndex = left.matrixIndexes[y][i];
-//					singleResult += left.getNoZeroElemXY(pomIndex, y) * right.getNoZeroElemXY(x, pomIndex);
-//				}
-//				newMatrix.setElemXY(x, y, singleResult);
-//			}
-//		}
-//	else {
-//		for (int x = 0; x < newMatrix.sizeCols; x++) {
-//			for (int y = 0; y < newMatrix.sizeRows; y++) {
-//				double singleResult = 0;
-//				for (int i = 0; i < (int)left.matrixIndexes[y].size(); i++) {
-//					int pomIndex = left.matrixIndexes[y][i];
-//					singleResult += left.getNoZeroElemXY(pomIndex, y) * right.getElemXYconst(x, pomIndex);
-//				}
-//				newMatrix.setElemXY(x, y, singleResult);
-//			}
-//		}
-//	}
-//
-//
-//	return newMatrix;
-//}
-//
-//const Matrix sparse::operator- (const Matrix& matrix) {
-//	Matrix newMatrix = Matrix(matrix.sizeRows, matrix.sizeCols);
-//	int pomX;
-//
-//	for (int y = 0; y < matrix.sizeRows; y++) {
-//		for (int x = 0; x < matrix.matrixIndexes[y].size(); x++) {
-//			pomX = matrix.matrixIndexes[y][x];
-//			newMatrix.setElemXY(pomX, y, -matrix.getNoZeroElemXY(pomX, y));
-//		}
-//	}
-//	return newMatrix;
-//}
-//
-//Matrix Matrix::matrixD() {
-//	Matrix newMatrix = Matrix(this->sizeRows);
-//
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		newMatrix.setElemXY(i, i, this->getElemXY(i, i));
-//	}
-//	return newMatrix;
-//}
-//
-//Matrix Matrix::matrixU() {
-//	Matrix newMatrix = Matrix(this->sizeRows);
-//
-//	for (int y = 0; y < this->sizeRows; y++) {
-//		for (int x = 0; x < (int)this->matrixIndexes[y].size(); x++)
-//			if (matrixIndexes[y][x] > y)
-//				newMatrix.setElemXY(matrixIndexes[y][x], y, this->getElemXY(matrixIndexes[y][x], y));
-//	}
-//	return newMatrix;
-//}
-//
-//Matrix Matrix::matrixL() {
-//	Matrix newMatrix = Matrix(this->sizeRows);
-//	for (int y = 0; y < this->sizeRows; y++) {
-//		for (int x = 0; x < (int)this->matrixIndexes[y].size(); x++)
-//			if (matrixIndexes[y][x] < y)
-//				newMatrix.setElemXY(matrixIndexes[y][x], y, this->getElemXY(matrixIndexes[y][x], y));
-//	}
-//	return newMatrix;
-//}
-//
-//Matrix Matrix::reverseD() {
-//	Matrix newMatrix = Matrix(this->sizeCols);
-//	double pomElem;
-//
-//	for (int i = 0; i < this->sizeCols; i++) {
-//		pomElem = this->getElemXY(i, i);
-//		if (pomElem)
-//			newMatrix.setElemXY(i, i, 1.0 / pomElem);
-//	}
-//	return newMatrix;
-//}
-//
-//double Matrix::norm() {
-//	double result = 0, pom;
-//
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		pom = getElemXY(0, i);
-//		result += pom * pom;
-//	}
-//	return sqrt(result);
-//}
-//
-//Matrix Matrix::forwardSubstitution(Matrix& eqations, Matrix& values) {
-//	Matrix newMatrix = Matrix(values.sizeRows, 1);
-//	double pomResult;
-//	int pomIndex;
-//
-//	for (int y = 0; y < newMatrix.sizeRows; y++) {
-//		pomResult = 0;
-//		for (int j = 0; j < eqations.matrixIndexes[y].size(); j++) {
-//			pomIndex = eqations.matrixIndexes[y][j];
-//			if (pomIndex != y)
-//				pomResult += eqations.getNoZeroElemXY(pomIndex, y) * newMatrix.getElemXY(0, pomIndex);
-//		}
-//		newMatrix.setElemXY(0, y, (values.getElemXY(0, y) - pomResult) / eqations.getNoZeroElemXY(y, y));
-//	}
-//	return newMatrix;
-//}
-//
-//Matrix Matrix::backSubstitution(Matrix& eqations, Matrix& values) {
-//	Matrix newMatrix = Matrix(values.sizeRows, 1);
-//	double pomResult;
-//	int pomIndex;
-//
-//	for (int y = newMatrix.sizeRows - 1; y >= 0; y--) {
-//		pomResult = 0;
-//		for (int j = 0; j < eqations.matrixIndexes[y].size(); j++) {
-//			pomIndex = eqations.matrixIndexes[y][j];
-//			if (pomIndex != y)
-//				pomResult += eqations.getNoZeroElemXY(pomIndex, y) * newMatrix.getElemXY(0, pomIndex);
-//		}
-//		newMatrix.setElemXY(0, y, (values.getElemXY(0, y) - pomResult) / eqations.getNoZeroElemXY(y, y));
-//	}
-//	return newMatrix;
-//}
-//
-//void Matrix::doolittle_fLU(Matrix& L, Matrix& U) {
-//	double newElem;
-//	int pomIndex;
-//
-//	L.diagOnesGenerator();
-//	for (int i = 0; i < this->sizeRows; i++) {
-//		for (int j = i; j < this->sizeCols; j++) {
-//			newElem = 0;
-//			for (int k = 0; k < L.matrixIndexes[i].size(); k++) {
-//				pomIndex = L.matrixIndexes[i][k];
-//				if (pomIndex != i)	
-//					newElem += L.getNoZeroElemXY(pomIndex, i) * U.getElemXY(j, pomIndex);
-//			}
-//			newElem = this->getElemXY(j, i) - newElem;
-//			if (newElem != 0)
-//				U.setElemXY(j, i, newElem);
-//		}
-//		for (int j = i + 1; j < this->sizeCols; j++) {
-//			newElem = 0;
-//			for (int k = 0; k < i; k++) {
-//				if (k != j)
-//					newElem += L.getElemXY(k, j) * U.getElemXY(i, k);
-//			}
-//			newElem = (this->getElemXY(j, i) - newElem) / U.getElemXY(i, i);
-//			if (newElem != 0)
-//				L.setElemXY(i, j, newElem);
-//		}
-//	}
-//}
